@@ -1,0 +1,33 @@
+# Laxsanya Whisper AI - Speech-to-Text Web App (Ready for Deployment)
+
+import streamlit as st
+import whisper
+import tempfile
+
+st.set_page_config(page_title="Laxsanya Whisper AI", layout="centered")
+st.title("Laxsanya Whisper AI - Speech-to-Text")
+st.write("Upload an audio file and get its transcription.")
+
+# Upload audio file
+uploaded_file = st.file_uploader("Upload Audio", type=["mp3", "wav", "m4a"])
+
+if uploaded_file is not None:
+    # Save uploaded file to a temporary file
+    tfile = tempfile.NamedTemporaryFile(delete=False)
+    tfile.write(uploaded_file.read())
+    st.audio(tfile.name)
+
+    # Load Whisper model
+    model = whisper.load_model("base")
+    result = model.transcribe(tfile.name)
+
+    # Show transcription
+    st.subheader("Transcription:")
+    st.write(result['text'])
+
+st.info("Developed by Laxsanya RJ")
+
+# requirements.txt content for Render deployment:
+# streamlit
+# torch
+# git+https://github.com/openai/whisper.git
