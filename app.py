@@ -25,7 +25,7 @@ if uploaded_file is not None:
 
     try:
         with st.spinner(f"Loading {model_size} Whisper model..."):
-            model = whisper.load_model(model_size)
+            model = whisper.load_model("tiny")
         with st.spinner("Transcribing audio..."):
             result = model.transcribe(tfile.name)
         st.success("Transcription Completed!")
