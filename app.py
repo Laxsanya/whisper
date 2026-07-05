@@ -15,39 +15,30 @@ st.sidebar.header("Settings")
 model_size = st.sidebar.selectbox("Choose Whisper Model", ["tiny", "base", "small", "medium", "large"])
 show_audio = st.sidebar.checkbox("Show Audio Player", value=True)
 
-# Cache model so it doesn't reload every time
+uploaded_file = st.file_uploader("Upload Audio File (.mp3, .wav, .m4a)", type=["mp3", "wav", "m4a"])
+
+# ✅ LOAD MODEL ONLY ONCE (THIS FIXES 503 ERROR)
 @st.cache_resource
 def load_model(name):
     return whisper.load_model(name)
 
-uploaded_file = st.file_uploader("Upload Audio File (.mp3, .wav, .m4a)", type=["mp3", "wav", "m4a"])
+model = load_model(model_size)
 
 if uploaded_file is not None:
 
-    # Save temp file
+    import tempfile
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
         tmp.write(uploaded_file.read())
         audio_path = tmp.name
 
-    if show_audio:
-        st.audio(audio_path)
+    st.audio(audio_path)
 
-    try:
-        # Load selected model
-        with st.spinner(f"Loading {model_size} model..."):
-            model = load_model(model_size)
+    with st.spinner("Transcribing..."):
+        result = model.transcribe(audio_path)
 
-        # Transcribe
-        with st.spinner("Transcribing audio..."):
-            result = model.transcribe(audio_path)
+    st.success("Transcription Completed!")
 
-        # OUTPUT
-        st.success("Transcription Completed!")
-
-        st.subheader("Transcribed Text")
-        st.text_area("Your Transcription", result["text"], height=300)
-
-    except Exception as e:
-        st.error(f"Error: {e}")
+    st.text_area("Your Transcription", result["text"], height=300)
 
 st.markdown("<p style='text-align: center; color: #FF4B4B;'>Developed by Laxsanya RJ</p>", unsafe_allow_html=True)
