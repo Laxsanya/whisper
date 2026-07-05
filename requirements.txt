@@ -2,3 +2,5 @@ streamlit
 torch
 git+https://github.com/openai/whisper.git
 matplotlib
+openai-whisper
+ffmpeg-python
