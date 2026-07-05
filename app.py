@@ -6,7 +6,7 @@ import os
 # ===== PAGE CONFIG =====
 st.set_page_config(page_title="Laxsanya Whisper AI", layout="wide")
 
-# ===== UI (UNCHANGED) =====
+# ===== YOUR DESIGN =====
 st.markdown("""
 <h1 style='text-align: center; color: #FF4B4B;'>
 Laxsanya Whisper AI - Speech-to-Text
@@ -29,19 +29,18 @@ model_size = st.sidebar.selectbox(
 
 show_audio = st.sidebar.checkbox("Show Audio Player", True)
 
-# ===== LOAD MODEL (FIXED CACHE) =====
+# ===== LOAD MODEL =====
 @st.cache_resource
 def load_model(name):
     return whisper.load_model(name)
 
-model = load_model(model_size)
-
-# ===== UPLOAD =====
+# ===== FILE UPLOAD =====
 uploaded_file = st.file_uploader(
     "Upload Audio File (.mp3, .wav, .m4a)",
     type=["mp3", "wav", "m4a"]
 )
 
+# ===== ONLY RUN AFTER UPLOAD =====
 if uploaded_file is not None:
 
     file_ext = uploaded_file.name.split(".")[-1]
@@ -54,22 +53,24 @@ if uploaded_file is not None:
         st.audio(audio_path)
 
     try:
+        with st.spinner("Loading Whisper model..."):
+            model = load_model(model_size)
+
         with st.spinner("Transcribing audio..."):
             result = model.transcribe(audio_path)
 
-        text = result.get("text", "")
-
-        st.success("Transcription Completed!")
+        st.success("✅ Transcription Completed!")
 
         st.subheader("Transcribed Text")
-        st.text_area("", text, height=300)
-
-        if text.strip() == "":
-            st.warning("No speech detected in audio.")
+        st.text_area(
+            "",
+            result.get("text", ""),
+            height=300
+        )
 
     except Exception as e:
-        st.error("Something went wrong during transcription.")
-        st.error(str(e))
+        st.error("❌ Error during transcription")
+        st.exception(e)
 
     finally:
         if os.path.exists(audio_path):
